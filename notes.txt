@@ -5,7 +5,7 @@
 
     # create argument logic
 
-    # if exists on SOURCE and TARGET not, remove from TARGET
+    # if exists on TARGET AND SOURCE not, remove from TARGET
     # if exists on SOURCE and TARGET, compare sizes, compare update dates, compare hashes (SHA1)
 
 # 2) synchronization should be performed in periods (in the argument have seconds, and sleep for that)
