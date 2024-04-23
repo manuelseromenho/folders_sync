@@ -4,7 +4,7 @@ import sys
 import time
 from pathlib import Path
 
-from sync import SyncManager
+from sync_manager import SyncManager
 
 USAGE = f"Usage: python {sys.argv[0]} [--help] | source_path target_path sync_period log_path]"
 
