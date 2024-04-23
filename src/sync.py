@@ -37,7 +37,7 @@ class SyncManager:
         for file_name in target_files:
             source_file = source_files.get(file_name)
 
-            if file_name is not None and source_file is None:
+            if source_file is None:
                 os.remove(f"{self.target_path}/{file_name}")
                 logging.info(f"file {self.target_path}/{file_name} deleted")
 
