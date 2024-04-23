@@ -41,28 +41,32 @@ class SyncManager:
                 os.remove(f"{self.target_path}/{file_name}")
                 logging.info(f"file {self.target_path}/{file_name} deleted")
 
-    def _sync_copy_update(self, source_files, target_files, file_name):
-        target_file = target_files.get(file_name)
-        source_file = source_files.get(file_name)
+    def _sync_copy(self, file_name, msg_log):
+        copy_file(self.source_path, self.target_path, file_name)
+        logging.info(msg_log)
 
-        if source_file is not None and target_file is None:
-            copy_file(self.source_path, self.target_path, file_name)
-            logging.info(f"file {self.source_path}/{file_name} was copied to {self.target_path}/{file_name}")
-        elif target_file.file_size != source_file.file_size:
-            copy_file(self.source_path, self.target_path, file_name)
-            logging.info(f"file {self.source_path}/{file_name} was updated to {self.target_path}/{file_name}")
+    def _sync_update(self, source_file, target_file, file_name, msg_log):
+        if target_file.file_size != source_file.file_size:
+            self._sync_copy(file_name)
         else:
             target_hash = hash_file_sha1(f"{self.target_path}/{file_name}")
             source_hash = hash_file_sha1(f"{self.source_path}/{file_name}")
             if target_hash != source_hash:
-                copy_file(self.source_path, self.target_path, file_name)
-                logging.info(f"file {self.source_path}/{file_name} was updated to {self.target_path}/{file_name}")
+                self._sync_copy(file_name, msg_log)
 
     def _sync_folders(self, source_files, target_files):
         self._sync_remove(source_files, target_files)
 
         for file_name in source_files:
-            self._sync_copy_update(source_files, target_files, file_name)
+            target_file = target_files.get(file_name)
+            source_file = source_files.get(file_name)
+
+            if source_file is not None and target_file is None:
+                msg_log = f"file {self.source_path}/{file_name} was copied to {self.target_path}/{file_name}"
+                self._sync_copy(file_name, msg_log)
+            else:
+                msg_log = f"file {self.source_path}/{file_name} was updated to {self.target_path}/{file_name}"
+                self._sync_update(source_file, target_file, file_name, msg_log)
 
     @staticmethod
     def _create_files_set(path):
