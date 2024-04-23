@@ -33,6 +33,19 @@ class SyncManager:
         self._sync_folders(source_files, target_files)
         self.logger.info("Synchronization completed")
 
+    def _sync_folders(self, source_files, target_files):
+        self._sync_remove(source_files, target_files)
+
+        for file_name in source_files:
+            target_file = target_files.get(file_name)
+            source_file = source_files.get(file_name)
+
+            if source_file is not None and target_file is None:
+                msg_log = f"file {self.source_path}/{file_name} was copied to {self.target_path}/{file_name}"
+                self._sync_copy(file_name, msg_log)
+            else:
+                self._sync_update(source_file, target_file, file_name)
+
     def _sync_remove(self, source_files, target_files):
         for file_name in target_files:
             source_file = source_files.get(file_name)
@@ -56,18 +69,6 @@ class SyncManager:
                 msg_log = f"file {self.source_path}/{file_name} was updated to {self.target_path}/{file_name}"
                 self._sync_copy(file_name, msg_log)
 
-    def _sync_folders(self, source_files, target_files):
-        self._sync_remove(source_files, target_files)
-
-        for file_name in source_files:
-            target_file = target_files.get(file_name)
-            source_file = source_files.get(file_name)
-
-            if source_file is not None and target_file is None:
-                msg_log = f"file {self.source_path}/{file_name} was copied to {self.target_path}/{file_name}"
-                self._sync_copy(file_name, msg_log)
-            else:
-                self._sync_update(source_file, target_file, file_name)
 
     @staticmethod
     def _create_files_set(path):
