@@ -69,7 +69,6 @@ class SyncManager:
                 msg_log = f"file {self.source_path}/{file_name} was updated to {self.target_path}/{file_name}"
                 self._sync_copy(file_name, msg_log)
 
-
     @staticmethod
     def _create_files_set(path):
         files = {}
