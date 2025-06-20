@@ -26,3 +26,6 @@ env/
 
 #others
 /logs
+source
+target
+log1.txt

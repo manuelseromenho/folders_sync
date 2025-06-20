@@ -1,9 +1,12 @@
 import hashlib
+from pathlib import Path
 from shutil import copy2
 
 
 def copy_file(source_path, target_path, file_name):
-    copy2(f"{source_path}/{file_name}", f"{target_path}/{file_name}")
+    source_path = Path(source_path)
+    target_path = Path(target_path)
+    copy2(source_path / file_name, target_path / file_name)
 
 
 def get_files(path):

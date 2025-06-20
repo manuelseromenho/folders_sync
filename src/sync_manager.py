@@ -1,29 +1,23 @@
-import logging
-import os
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 
-from utils import copy_file, get_files, hash_file_sha1
+from .utils import copy_file, get_files, hash_file_sha1
 
 
+@dataclass
 class FileToSync:
-    file_name = ""
-    file_path = ""
-    file_update_datetime = ""
-    file_size = 0
-    hash_value = ""
-
-    def __init__(self, file_name, file_path, file_update_datetime, file_size, hash_value=""):
-        self.file_name = file_name
-        self.file_path = file_path
-        self.file_update_datetime = file_update_datetime
-        self.file_size = file_size
-        self.hash_value = hash_value
+    file_name: str = ""
+    file_path: Path = Path()
+    file_update_datetime: str = ""
+    file_size: int = 0
+    hash_value: str = ""
 
 
 class SyncManager:
     def __init__(self, source_path, target_path, logger):
-        self.source_path = source_path
-        self.target_path = target_path
+        self.source_path = Path(source_path)
+        self.target_path = Path(target_path)
         self.logger = logger
 
     def sync(self):
@@ -41,26 +35,27 @@ class SyncManager:
             source_file = source_files.get(file_name)
 
             if source_file is not None and target_file is None:
-                msg_log = f"file {self.source_path}/{file_name} was copied to {self.target_path}/{file_name}"
+                msg_log = f"file {self.source_path / file_name} was copied to {self.target_path / file_name}"
                 self._sync_copy(file_name, msg_log)
             else:
                 self._sync_update(source_file, target_file, file_name)
 
     def _sync_remove(self, source_files, target_files):
         for file_name in target_files:
-            source_file = source_files.get(file_name)
-
-            if source_file is None:
-                os.remove(f"{self.target_path}/{file_name}")
-                logging.info(f"file {self.target_path}/{file_name} deleted")
+            if file_name not in source_files:
+                (self.target_path / file_name).unlink()
+                self.logger.info(f"file {self.target_path / file_name} deleted")
 
     def _sync_copy(self, file_name, msg_log):
-        copy_file(self.source_path, self.target_path, file_name)
-        logging.info(msg_log)
+        try:
+            copy_file(self.source_path, self.target_path, file_name)
+        except Exception as e:
+            self.logger.error(f"Failed to copy {file_name}: {e}")
+        self.logger.info(msg_log)
 
     def _sync_update(self, source_file, target_file, file_name):
         if target_file.file_size != source_file.file_size:
-            msg_log = f"file {self.source_path}/{file_name} was updated to {self.target_path}/{file_name}"
+            msg_log = f"file {self.source_path / file_name} was updated to {self.target_path / file_name}"
             self._sync_copy(file_name, msg_log)
         else:
             target_hash = hash_file_sha1(f"{self.target_path}/{file_name}")
@@ -74,11 +69,13 @@ class SyncManager:
         files = {}
         files_list = get_files(path)
         for file in files_list:
-            file_stats = file.parent.stat()
+            file_stats = file.stat()
             file_obj = FileToSync(
-                file_name=str(file.name),
-                file_path=str(file),
-                file_update_datetime=datetime.fromtimestamp(file.parent.stat().st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+                file_name=file.name,
+                file_path=file,
+                file_update_datetime=datetime.fromtimestamp(
+                    file_stats.st_mtime
+                ).strftime("%Y-%m-%d %H:%M:%S"),
                 file_size=file_stats.st_size,
             )
             files[file_obj.file_name] = file_obj

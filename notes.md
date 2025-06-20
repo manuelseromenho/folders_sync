@@ -6,7 +6,9 @@
         # if exists on TARGET AND SOURCE not, remove from TARGET
         # if exists on SOURCE and TARGET, compare sizes, compare hashes (SHA1)
 
-    2) synchronization should be performed in periods (in the argument have seconds, and sleep for that)
+    2) synchronization should be performed in periods (argument should be in seconds)
+
+    3) limit the synchronizations to a specific amount (argument should be an int)
 
     3) Log to file (created, copied, removed), console output
 
