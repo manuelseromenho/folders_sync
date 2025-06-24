@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from shutil import copy2
+from typing import Optional, Union
 
 from .utils import hash_file_sha1
 
@@ -23,14 +24,14 @@ class SyncManager:
         self.source_files = None
         self.target_files = None
 
-    def sync(self):
+    def sync(self) -> None:
         self.logger.info("Starting synchronization")
         self.source_files = self._create_files_set(self.source_path)
         self.target_files = self._create_files_set(self.target_path)
         self._sync_folders()
         self.logger.info("Synchronization completed")
 
-    def _sync_folders(self):
+    def _sync_folders(self) -> None:
         self._sync_remove()
 
         for file_name in self.source_files:
@@ -42,7 +43,7 @@ class SyncManager:
             elif target_file != source_file:
                 self._sync_update(source_file, target_file, file_name)
 
-    def _sync_remove(self):
+    def _sync_remove(self) -> None:
         for file_name in self.target_files:
             try:
                 if file_name not in self.source_files:
@@ -56,7 +57,13 @@ class SyncManager:
             except Exception as e:
                 self.logger.error(f"Failed to copy {file_name}: {e}")
 
-    def _sync_copy(self, source_file, target_file, file_name, msg_log=None):
+    def _sync_copy(
+        self,
+        source_file,
+        target_file,
+        file_name: Union[Path, str],
+        msg_log: Optional[str] = None,
+    ):
         try:
             copy2(source_file, target_file)
             if msg_log is None:
@@ -69,7 +76,12 @@ class SyncManager:
         except Exception as e:
             self.logger.error(f"Failed to copy {file_name}: {e}")
 
-    def _sync_update(self, source_file, target_file, file_name):
+    def _sync_update(
+        self,
+        source_file: Path,
+        target_file: Path,
+        file_name: Union[Path, str],
+    ):
         msg_log = f"file {source_file} was updated to {target_file}"
         target_hash = hash_file_sha1(f"{self.target_path}/{file_name}")
         source_hash = hash_file_sha1(f"{self.source_path}/{file_name}")
@@ -88,7 +100,9 @@ class SyncManager:
                 files[file.name] = FileToSync(
                     file_name=file.name,
                     file_path=file,
-                    file_update_datetime=datetime.fromtimestamp(stats.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+                    file_update_datetime=datetime.fromtimestamp(
+                        stats.st_mtime
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
                     file_size=stats.st_size,
                 )
         return files

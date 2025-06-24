@@ -1,8 +1,9 @@
 import hashlib
 import logging
+from pathlib import Path
 
 
-def hash_file_sha1(file_path):
+def hash_file_sha1(file_path: str | Path) -> str:
     hash_sha1 = hashlib.sha1()
     try:
         with open(file_path, "rb") as file:
