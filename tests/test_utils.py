@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.utils import hash_file_sha1
+from src.__main__ import hash_file_sha1
 
 
 def test_hash_nonexistent_file():
